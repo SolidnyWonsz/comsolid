@@ -4,33 +4,36 @@ using System.Text.Json;
 
 namespace ComSolid.Client
 {
-    public class ConfigHandler
+    public static class ConfigHandler
     {
         class Config
         {
             public string? Name { get; set; }
             public int SendBufferSize { get; set; }
             public int ReceiveBufferSize { get; set; }
-            public int SampleRate { get; set; }
-            public int AudioBufferSize { get; set; }
+            public ushort SampleRate { get; set; }
+            public byte Channels { get; set; }
+            public int Frequency { get; set; }
         }
 
-        readonly Config? config;
+        static Config? config;
 
         static readonly Config config_template = new Config
         {
             Name = string.Empty,
             SendBufferSize = 4096,
             ReceiveBufferSize = 4096,
-            SampleRate = 4096,
-            AudioBufferSize = 4096
+            SampleRate = 512,
+            Channels = 2,
+            Frequency = 44100,
         };
 
-        public ConfigHandler()
+        public static void Load()
         {
             if (!File.Exists("config.json"))
             {
                 File.WriteAllText("config.json", JsonSerializer.Serialize<Config>(config_template));
+                config = config_template;
             }
             else
             {
@@ -39,15 +42,16 @@ namespace ComSolid.Client
             }
         }
 
-        public bool IsValid()
+        public static bool IsValid()
         {
             return (config != null) && (config.Name != string.Empty);
         }
 
-        public int GetSendBuffer() { return config.SendBufferSize; }
-        public int GetReceiveBuffer() { return config.ReceiveBufferSize; }
-        public int GetSampleRate() { return config.SampleRate; }
-        public int GetAudioBuffer() { return config.AudioBufferSize; }
-        public string GetUsername() { return config.Name; }
+        public static int GetSendBuffer() { return config.SendBufferSize; }
+        public static int GetReceiveBuffer() { return config.ReceiveBufferSize; }
+        public static string GetUsername() { return config.Name; }
+        public static ushort GetSampleRate() { return config.SampleRate; }
+        public static byte GetChannels() { return config.Channels; }
+        public static int GetFrequency() { return config.Frequency; }
     }
 }

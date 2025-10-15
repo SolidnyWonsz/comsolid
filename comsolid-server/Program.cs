@@ -12,7 +12,7 @@ class Program
             switch (args[i])
             {
                 case "-p":
-                case "--port=":
+                case "--port":
                     if (i + 1 < args.Length)
                     {
                         port = Int32.Parse(args[i + 1]);

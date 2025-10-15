@@ -48,8 +48,6 @@ namespace ComSolid.Server
             byte[] data = listener.Receive(ref groupEP);
             if (data.Length == 0) return;
 
-            Console.WriteLine("JAKIES DANE KURWA");
-
             string text = Encoding.UTF8.GetString(data);
             using var doc = JsonDocument.Parse(text);
             ushort type = doc.RootElement.GetProperty("Type").GetUInt16();
@@ -57,13 +55,8 @@ namespace ComSolid.Server
             
             string? base64 = doc.RootElement.GetProperty("Data").GetString();
 
-            //Console.WriteLine($"({groupEP}) ({name}):");
-
             switch (type)
             {
-                case 0:
-                    //Console.WriteLine("[HEARTBEAT]");
-                    break;
                 case 1:
                     HandleJoin(ref groupEP, name);
                     break;
@@ -82,6 +75,7 @@ namespace ComSolid.Server
             foreach (var user in users.Keys)
             {
                 if (user.Equals(_groupEP)) continue;
+                byte[] msg = Message.CreateMessage(Message.Types.Audio, user.Address, data);
                 listener.SendAsync(data, data.Length, user);
             }
         }

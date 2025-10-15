@@ -20,10 +20,10 @@ namespace ComSolid.Client
                 recordingCallbackDelegate = RecordingCallback;
                 SDL.SDL_AudioSpec desiredSpec = new()
                 {
-                    freq = 44100,
+                    freq = ConfigHandler.GetFrequency(),
                     format = SDL.AUDIO_F32,
-                    channels = 2,
-                    samples = 512,
+                    channels = ConfigHandler.GetChannels(),
+                    samples = ConfigHandler.GetSampleRate(),
                     callback = recordingCallbackDelegate
                 };
 
@@ -92,10 +92,10 @@ namespace ComSolid.Client
 
                 SDL.SDL_AudioSpec desiredSpec = new()
                 {
-                    freq = 44100,
+                    freq = ConfigHandler.GetFrequency(),
                     format = SDL.AUDIO_F32,
-                    channels = 2,
-                    samples = 512,
+                    channels = ConfigHandler.GetChannels(),
+                    samples = ConfigHandler.GetSampleRate(),
                     callback = playbackCallbackDelegate
                 };
 

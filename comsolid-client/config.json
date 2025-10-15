@@ -2,6 +2,7 @@
     "Name": "solidnywonsz12",
     "SendBufferSize": 4096,
     "ReceiveBufferSize": 4096,
-    "SampleRate": 48000,
-    "AudioBufferSize": 128
+    "SampleRate": 512,
+    "Channels": 2,
+    "Frequency": 44100
 }

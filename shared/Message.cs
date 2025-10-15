@@ -1,6 +1,11 @@
+using System;
+using System.Net;
+using System.Text;
+using System.Text.Json;
+
 namespace shared
 {
-    public struct Message(Message.Types type, string user, byte[]? data)
+    public class Message(Message.Types type, byte[]? data)
     {
         public enum Types : ushort
         {
@@ -11,7 +16,13 @@ namespace shared
         }
 
         public Types Type { get; set; } = type;
-        public string User { get; set; } = user;
         public byte[] Data { get; set; } = data;
+
+        public static byte[] CreateMessage(Message.Types type, IPAddress? user = null, byte[]? data = null)
+        {
+            Message msg = new(type, data);
+            string json = JsonSerializer.Serialize(msg);
+            return Encoding.UTF8.GetBytes(json);
+        }
     }
 }
