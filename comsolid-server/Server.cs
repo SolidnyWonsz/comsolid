@@ -46,6 +46,7 @@ namespace ComSolid.Server
         void Listen()
         {
             byte[] data = listener.Receive(ref groupEP);
+
             if (data.Length == 0) return;
 
             string text = Encoding.UTF8.GetString(data);
@@ -75,8 +76,8 @@ namespace ComSolid.Server
             foreach (var user in users.Keys)
             {
                 if (user.Equals(_groupEP)) continue;
-                byte[] msg = Message.CreateMessage(Message.Types.Audio, user.Address, data);
-                listener.SendAsync(data, data.Length, user);
+                byte[] msg = Message.CreateMessage(Message.Types.Audio, out Message message, user, data);
+                listener.Send(msg, msg.Length, user);
             }
         }
 

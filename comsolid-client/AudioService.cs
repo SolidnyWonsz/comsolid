@@ -20,10 +20,10 @@ namespace ComSolid.Client
                 recordingCallbackDelegate = RecordingCallback;
                 SDL.SDL_AudioSpec desiredSpec = new()
                 {
-                    freq = ConfigHandler.GetFrequency(),
-                    format = SDL.AUDIO_F32,
+                    freq = 44100,
+                    format = SDL.AUDIO_F32SYS,
                     channels = ConfigHandler.GetChannels(),
-                    samples = ConfigHandler.GetSampleRate(),
+                    samples = 512,
                     callback = recordingCallbackDelegate
                 };
 
@@ -83,7 +83,7 @@ namespace ComSolid.Client
         public class OutputAudio
         {
             uint outputDevice;
-            public ConcurrentQueue<float> playbackQueue = new ConcurrentQueue<float>();
+            ConcurrentDictionary<string, ConcurrentQueue<float[]>> playbackQueue = new ConcurrentDictionary<string, ConcurrentQueue<float[]>>();
             SDL.SDL_AudioCallback playbackCallbackDelegate;
 
             public OutputAudio()
@@ -92,10 +92,10 @@ namespace ComSolid.Client
 
                 SDL.SDL_AudioSpec desiredSpec = new()
                 {
-                    freq = ConfigHandler.GetFrequency(),
-                    format = SDL.AUDIO_F32,
+                    freq = 44100,
+                    format = SDL.AUDIO_F32SYS,
                     channels = ConfigHandler.GetChannels(),
-                    samples = ConfigHandler.GetSampleRate(),
+                    samples = 512,
                     callback = playbackCallbackDelegate
                 };
 
@@ -112,27 +112,49 @@ namespace ComSolid.Client
             void PlaybackCallback(IntPtr userdata, IntPtr stream, int len)
             {
                 int sampleCount = len / sizeof(float);
-                float[] outputSamples = new float[sampleCount];
 
-                for (int i = 0; i < sampleCount; i++)
+                float[] mixBuffer = new float[sampleCount];
+
+                int activeStreams = 0;
+
+                foreach (var queuePair in playbackQueue)
                 {
-                    if (playbackQueue.TryDequeue(out float sample))
+                    var queue = queuePair.Value;
+                    int samplesRead = 0;
+
+                    while (samplesRead < sampleCount && queue.TryDequeue(out var sample))
                     {
-                        outputSamples[i] = sample;
+                        int copyCount = Math.Min(sample.Length, sampleCount - samplesRead);
+
+                        for (int i = 0; i < copyCount; i++)
+                        {
+                            mixBuffer[samplesRead + i] += sample[i];
+                        }
+
+                        samplesRead += copyCount;
                     }
-                    else
+
+                    if (samplesRead > 0)
+                        activeStreams++;
+                }
+
+                if (activeStreams > 0)
+                {
+                    float gain = 1f / activeStreams;
+                    for (int i = 0; i < sampleCount; i++)
                     {
-                        outputSamples[i] = 0f;
+                        mixBuffer[i] = Math.Clamp(mixBuffer[i] * gain, -1f, 1f);
                     }
                 }
 
-                Marshal.Copy(outputSamples, 0, stream, sampleCount);
+                Marshal.Copy(mixBuffer, 0, stream, sampleCount);
             }
 
-            public void InsertPlaybackData(float[] outputSamples)
+            public void InsertPlaybackData(string user, float[] outputSamples)
             {
-                foreach (var sample in outputSamples)
-                    playbackQueue.Enqueue(sample);
+                var queue = playbackQueue.GetOrAdd(user, _ => new ConcurrentQueue<float[]>());
+
+                queue.Enqueue(outputSamples);
             }
 
             public void Close()

@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace shared
 {
-    public class Message(Message.Types type, byte[]? data)
+    public class Message(Message.Types type, string? user, byte[]? data)
     {
         public enum Types : ushort
         {
@@ -16,11 +16,12 @@ namespace shared
         }
 
         public Types Type { get; set; } = type;
-        public byte[] Data { get; set; } = data;
+        public string? User { get; set; } = user;
+        public byte[]? Data { get; set; } = data;
 
-        public static byte[] CreateMessage(Message.Types type, IPAddress? user = null, byte[]? data = null)
+        public static byte[] CreateMessage(Message.Types type, out Message msg, IPEndPoint? user = null, byte[]? data = null)
         {
-            Message msg = new(type, data);
+            msg = new(type, user?.ToString(), data);
             string json = JsonSerializer.Serialize(msg);
             return Encoding.UTF8.GetBytes(json);
         }

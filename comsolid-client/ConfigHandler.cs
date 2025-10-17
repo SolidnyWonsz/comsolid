@@ -9,11 +9,7 @@ namespace ComSolid.Client
         class Config
         {
             public string? Name { get; set; }
-            public int SendBufferSize { get; set; }
-            public int ReceiveBufferSize { get; set; }
-            public ushort SampleRate { get; set; }
             public byte Channels { get; set; }
-            public int Frequency { get; set; }
         }
 
         static Config? config;
@@ -21,11 +17,7 @@ namespace ComSolid.Client
         static readonly Config config_template = new Config
         {
             Name = string.Empty,
-            SendBufferSize = 4096,
-            ReceiveBufferSize = 4096,
-            SampleRate = 512,
-            Channels = 2,
-            Frequency = 44100,
+            Channels = 2
         };
 
         public static void Load()
@@ -47,11 +39,7 @@ namespace ComSolid.Client
             return (config != null) && (config.Name != string.Empty);
         }
 
-        public static int GetSendBuffer() { return config.SendBufferSize; }
-        public static int GetReceiveBuffer() { return config.ReceiveBufferSize; }
         public static string GetUsername() { return config.Name; }
-        public static ushort GetSampleRate() { return config.SampleRate; }
         public static byte GetChannels() { return config.Channels; }
-        public static int GetFrequency() { return config.Frequency; }
     }
 }

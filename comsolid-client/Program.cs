@@ -8,29 +8,22 @@ class Program
 
     static void Main(string[] args)
     {
-        int ip;
+        bool _loopback = false; 
 
         for (int i = 0; i < args.Length; i++)
         {
             switch (args[i])
             {
-                case "-i":
-                    if (i + 1 < args.Length)
-                    {
-                        ip = Int32.Parse(args[i]);
-                        i++;
-                    }
-                    else
-                    {
-                        Console.WriteLine($"comsolid-client: Nieprawidłowe użycie {args[i]}.\nPrawidłowe użycie: comsolid-client -i <adres IP>");
-                    }
+                case "-l":
+                case "--loopback:":
+                    _loopback = true;
                     break;
                 case "-h":
                 case "--help":
                     Console.WriteLine("comsolid-client\n");
                     Console.WriteLine("Użycie: comsolid-client [OPCJA]");
                     Console.WriteLine("     -h, --help");
-                    Console.WriteLine("     -i              Ustawia inny port niż domyślny 5005");
+                    Console.WriteLine("     -l, --loopback      Łączy się z lokalnym serwerem (localhost)");
                     return;
             }
         }
@@ -49,7 +42,16 @@ class Program
         audio = new();
 
         UserProfile profil = new UserProfile(ConfigHandler.GetUsername());
-        klient = new Client(ref profil, ref audio);
+        
+        if (_loopback)
+        {
+            klient = new Client(ref profil, ref audio, "127.0.0.1");
+        }
+        else
+        {
+            klient = new Client(ref profil, ref audio);
+        }
+
         klient.Start();
     }
 
